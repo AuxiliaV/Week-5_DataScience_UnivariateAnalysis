@@ -11,7 +11,7 @@ class Univariate():
                 quan.append(columnName)
         return quan,qual
     def MMM_IQR(dataset,quan):
-        descriptive=pd.DataFrame(index=["Mean","Median","Mode","Q1:25%","Q2:50%","Q3:75%","99%","Q4:100%","IQR","1.5Rule","Lesser","Greater","Min","Max"] ,columns=quan)
+        descriptive=pd.DataFrame(index=["Mean","Median","Mode","Q1:25%","Q2:50%","Q3:75%","99%","Q4:100%","IQR","1.5Rule","Lesser","Greater","Min","Max","Kurtosis","Skew","Variance","Std_Deviation"] ,columns=quan)
         for columnName in quan:
             descriptive[columnName]["Mean"]=dataset[columnName].mean()
             descriptive[columnName]["Median"]=dataset[columnName].median()
@@ -27,6 +27,10 @@ class Univariate():
             descriptive[columnName]["Greater"]=descriptive[columnName]["Q3:75%"]+descriptive[columnName]["1.5Rule"]
             descriptive[columnName]["Min"]=dataset[columnName].min()
             descriptive[columnName]["Max"]=dataset[columnName].max()
+            descriptive[columnName]["Kurtosis"]=dataset[columnName].kurtosis()
+            descriptive[columnName]["Skew"]=dataset[columnName].skew()
+            descriptive[columnName]['Variance']=dataset[columnName].var()
+            descriptive[columnName]['Std_Deviation']=dataset[columnName].std()
         return descriptive
     def Outliers(descriptive,quan):
         lesser=[]
@@ -52,4 +56,20 @@ class Univariate():
         freq_Table["Relative_Frequency"]=freq_Table["Frequency"]/num
         freq_Table["Cumsum"]=freq_Table["Relative_Frequency"].cumsum()
         return freq_Table
-        
+    def get_pdf_probability(df,start_range,end_range):
+        from matplotlib import pyplot
+        from scipy.stats import norm
+        import seaborn as sns
+        ax=sns.distplot(df,kde=True,kde_kws={'color':'blue'},color='Green')
+        pyplot.axvline(start_range,color='Red')
+        pyplot.axvline(end_range,color='Red')
+        sample=df
+        sample_mean=sample.mean()
+        sample_std=sample.std()
+        print('Mean=%.3f,Standard Deviation=%.3f',(sample_mean,sample_std))
+        dist=norm(sample_mean,sample_std)
+        values=[value for value in range(start_range,end_range)]
+        probabilities=[dist.pdf(value) for value in values]
+        prob=sum(probabilities)
+        print('The area between range ({},{}):{}'.format(start_range,end_range,sum(probabilities)))
+        return prob
